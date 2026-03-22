@@ -7,8 +7,17 @@
 // Site Info
 define('SITE_NAME', 'MFS Compilemama');
 define('SITE_NAME_BN', 'এমএফএস কম্পাইলমামা');
-define('SITE_URL', 'http://' . ($_SERVER['HTTP_HOST'] ?? 'localhost'));
+define('SITE_URL', 'https://mfs.compilemama.com');
 define('SITE_VERSION', '1.0.0');
+
+// Registration Mode: 'email' = email verification, 'direct' = no verification, 'otp' = SMS OTP
+define('REGISTRATION_MODE', 'email');
+
+// Auto approve after email verification
+define('AUTO_APPROVE_AFTER_VERIFY', true);
+
+// Verification link expiry (hours)
+define('VERIFICATION_EXPIRY_HOURS', 24);
 
 // Subscription
 define('SUB_AMOUNT', 150);

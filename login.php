@@ -7,6 +7,7 @@ require_once __DIR__ . '/config/config.php';
 require_once __DIR__ . '/config/location.php';
 require_once __DIR__ . '/includes/functions.php';
 require_once __DIR__ . '/includes/auth.php';
+require_once __DIR__ . '/includes/email.php';
 
 startSecureSession();
 
@@ -16,19 +17,61 @@ if (isLoggedIn()) {
 
 $error   = '';
 $success = '';
+$showResendEmail = false;
+$inactiveEmail   = '';
+$inactiveName    = '';
 
 if (isset($_GET['msg'])) {
     $msgs = [
         'logged_out'     => 'আপনি সফলভাবে লগআউট করেছেন।',
         'registered'     => 'রেজিস্ট্রেশন সফল! এখন লগইন করুন।',
-        'verify_first'   => 'লগইন করার আগে OTP ভেরিফাই করুন।',
+        'verify_first'   => 'লগইন করার আগে ইমেইল ভেরিফাই করুন।',
         'session_expired'=> 'সেশন শেষ হয়ে গেছে। পুনরায় লগইন করুন।',
+        'email_sent'     => 'ভেরিফিকেশন ইমেইল পাঠানো হয়েছে। আপনার ইনবক্স চেক করুন।',
     ];
     $key = htmlspecialchars($_GET['msg'], ENT_QUOTES, 'UTF-8');
     if (isset($msgs[$key])) $success = $msgs[$key];
 }
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+// Handle resend verification email
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['resend_verify'])) {
+    $token = $_POST['csrf_token'] ?? '';
+    if (!verifyCSRFToken($token)) {
+        $error = 'নিরাপত্তা যাচাই ব্যর্থ।';
+    } else {
+        $resendPhone = trim($_POST['resend_phone'] ?? '');
+        if (validateBDPhone($resendPhone)) {
+            $db   = getDB();
+            $stmt = $db->prepare("SELECT id, name, email, status FROM users WHERE phone = ? LIMIT 1");
+            $stmt->bind_param('s', $resendPhone);
+            $stmt->execute();
+            $user = $stmt->get_result()->fetch_assoc();
+            $stmt->close();
+
+            if ($user && $user['status'] === 'inactive' && !empty($user['email'])) {
+                if (!rateLimitCheck($user['email'], 'email_verify', 3, 3600)) {
+                    $error = 'অনেকবার ভেরিফিকেশন ইমেইল পাঠানো হয়েছে। ১ ঘণ্টা পরে আবার চেষ্টা করুন।';
+                } else {
+                    $verifyToken = bin2hex(random_bytes(32));
+                    $expiresAt   = date('Y-m-d H:i:s', time() + VERIFICATION_EXPIRY_HOURS * 3600);
+                    $stmtV = $db->prepare(
+                        "INSERT INTO email_verifications (user_id, email, token, expires_at) VALUES (?, ?, ?, ?)"
+                    );
+                    $stmtV->bind_param('isss', $user['id'], $user['email'], $verifyToken, $expiresAt);
+                    $stmtV->execute();
+                    $stmtV->close();
+                    sendVerificationEmail($user['email'], $user['name'], $verifyToken);
+                    redirect('/login.php?msg=email_sent');
+                }
+            }
+        }
+        if (!$error) {
+            $success = 'যদি এই নম্বরটি নিবন্ধিত ও অযাচাইকৃত থাকে তবে ভেরিফিকেশন ইমেইল পাঠানো হয়েছে।';
+        }
+    }
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST['resend_verify'])) {
     $token = $_POST['csrf_token'] ?? '';
     if (!verifyCSRFToken($token)) {
         $error = 'নিরাপত্তা যাচাই ব্যর্থ। পুনরায় চেষ্টা করুন।';
@@ -44,7 +87,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $error = 'অনেকবার চেষ্টা করা হয়েছে। ১ ঘণ্টা পরে আবার চেষ্টা করুন।';
         } else {
             $db   = getDB();
-            $stmt = $db->prepare("SELECT id, phone, name, pin_hash, status FROM users WHERE phone = ? LIMIT 1");
+            $stmt = $db->prepare("SELECT id, phone, name, email, pin_hash, status FROM users WHERE phone = ? LIMIT 1");
             $stmt->bind_param('s', $phone);
             $stmt->execute();
             $user = $stmt->get_result()->fetch_assoc();
@@ -55,16 +98,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             } elseif ($user['status'] === 'blocked') {
                 $error = 'আপনার অ্যাকাউন্ট ব্লক করা হয়েছে। সাপোর্টে যোগাযোগ করুন।';
             } elseif ($user['status'] === 'inactive') {
-                // Check if OTP verified
-                $stmtO = $db->prepare("SELECT id FROM otp_codes WHERE phone = ? AND verified = 1 LIMIT 1");
-                $stmtO->bind_param('s', $phone);
-                $stmtO->execute();
-                $otpRow = $stmtO->get_result()->fetch_assoc();
-                $stmtO->close();
-                if (!$otpRow) {
-                    redirect('/verify-otp.php?phone=' . urlencode($phone));
+                if (!verifyPIN($pin, $user['pin_hash'])) {
+                    $error = 'ফোন নম্বর বা PIN সঠিক নয়।';
+                } else {
+                    $error = 'আপনার ইমেইল ভেরিফাই করুন। ভেরিফিকেশন ইমেইল আবার পাঠাতে নিচের বাটনে ক্লিক করুন।';
+                    $showResendEmail = true;
+                    $inactiveEmail   = $user['email'] ?? '';
+                    $inactiveName    = $user['name'];
                 }
-                $error = 'আপনার অ্যাকাউন্ট সক্রিয় নেই।';
             } elseif (!verifyPIN($pin, $user['pin_hash'])) {
                 $error = 'ফোন নম্বর বা PIN সঠিক নয়।';
             } else {
@@ -150,6 +191,26 @@ include __DIR__ . '/includes/header.php';
                     </form>
 
                     <hr class="my-4">
+
+                    <?php if ($showResendEmail): ?>
+                    <div class="alert alert-warning rounded-3 mb-3">
+                        <p class="mb-2 fw-bold"><i class="fas fa-envelope me-2"></i>ইমেইল ভেরিফিকেশন প্রয়োজন</p>
+                        <p class="mb-3 small">
+                            <?php if ($inactiveEmail): ?>
+                            আপনার ইমেইল <strong><?= sanitize($inactiveEmail) ?></strong>-এ ভেরিফিকেশন লিংক পাঠানো হয়েছিল।
+                            <?php endif; ?>
+                            নিচের বাটনে ক্লিক করে নতুন ভেরিফিকেশন ইমেইল পান।
+                        </p>
+                        <form method="POST" action="/login.php">
+                            <input type="hidden" name="csrf_token" value="<?= $csrfToken ?>">
+                            <input type="hidden" name="resend_verify" value="1">
+                            <input type="hidden" name="resend_phone" value="<?= sanitize($_POST['phone'] ?? '') ?>">
+                            <button type="submit" class="btn btn-warning btn-sm rounded-pill fw-bold px-4">
+                                <i class="fas fa-paper-plane me-1"></i>ভেরিফিকেশন ইমেইল পাঠান
+                            </button>
+                        </form>
+                    </div>
+                    <?php endif; ?>
 
                     <div class="text-center">
                         <p class="mb-0 text-muted">
