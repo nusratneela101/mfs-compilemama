@@ -8,14 +8,22 @@ require_once __DIR__ . '/../config/config.php';
 require_once __DIR__ . '/../config/location.php';
 require_once __DIR__ . '/../includes/functions.php';
 require_once __DIR__ . '/../includes/auth.php';
+require_once __DIR__ . '/../includes/settings.php';
 
 startSecureSession();
 $csrfToken   = generateCSRFToken();
 $currentUser = getCurrentUser();
 $isLogged    = isLoggedIn();
 
+// Load dynamic settings with fallback to config constants
+$_siteName   = getSetting('site_name',    SITE_NAME);
+$_siteNameBn = getSetting('site_name_bn', SITE_NAME_BN);
+$_themeColor = getSetting('theme_color',  '#E2136E');
+$_favicon    = getSetting('site_favicon', '');
+$_logo       = getSetting('site_logo',    '');
+
 // Page title default
-if (!isset($pageTitle)) $pageTitle = SITE_NAME;
+if (!isset($pageTitle)) $pageTitle = $_siteName;
 if (!isset($bodyClass)) $bodyClass = '';
 ?>
 <!DOCTYPE html>
@@ -23,9 +31,12 @@ if (!isset($bodyClass)) $bodyClass = '';
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="MFS Compilemama - Bangladesh's premier multi-MFS portal">
-    <meta name="theme-color" content="#E2136E">
-    <title><?= sanitize($pageTitle) ?> — <?= SITE_NAME ?></title>
+    <meta name="description" content="<?= sanitize(getSetting('site_description', 'Bangladesh\'s premier multi-MFS portal')) ?>">
+    <meta name="theme-color" content="<?= sanitize($_themeColor) ?>">
+    <title><?= sanitize($pageTitle) ?> — <?= sanitize($_siteName) ?></title>
+    <?php if ($_favicon): ?>
+    <link rel="icon" href="<?= sanitize($_favicon) ?>">
+    <?php endif; ?>
 
     <!-- Google Fonts: Hind Siliguri for Bengali -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -41,6 +52,9 @@ if (!isset($bodyClass)) $bodyClass = '';
     <link rel="stylesheet" href="/assets/css/style.css">
 
     <meta name="csrf-token" content="<?= $csrfToken ?>">
+    <?php if ($_themeColor !== '#E2136E'): ?>
+    <style>:root { --theme-color: <?= sanitize($_themeColor) ?>; }</style>
+    <?php endif; ?>
 </head>
 <body class="<?= sanitize($bodyClass) ?>">
 
@@ -48,10 +62,14 @@ if (!isset($bodyClass)) $bodyClass = '';
 <nav class="navbar navbar-expand-lg navbar-dark mfs-navbar sticky-top">
     <div class="container">
         <a class="navbar-brand d-flex align-items-center gap-2" href="/">
-            <span class="brand-icon">💳</span>
+            <?php if ($_logo): ?>
+                <img src="<?= sanitize($_logo) ?>" alt="<?= sanitize($_siteName) ?>" style="max-height:40px;width:auto">
+            <?php else: ?>
+                <span class="brand-icon">💳</span>
+            <?php endif; ?>
             <div>
-                <span class="brand-name"><?= SITE_NAME ?></span>
-                <span class="brand-name-bn d-block"><?= SITE_NAME_BN ?></span>
+                <span class="brand-name"><?= sanitize($_siteName) ?></span>
+                <span class="brand-name-bn d-block"><?= sanitize($_siteNameBn) ?></span>
             </div>
         </a>
         <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain">

@@ -7,12 +7,27 @@ require_once __DIR__ . '/config/config.php';
 require_once __DIR__ . '/config/location.php';
 require_once __DIR__ . '/includes/functions.php';
 require_once __DIR__ . '/includes/auth.php';
+require_once __DIR__ . '/includes/settings.php';
 
 startSecureSession();
 $isLogged  = isLoggedIn();
 $providers = getMFSProviders();
 $pageTitle = 'হোম';
 $bodyClass = 'home-page';
+
+// Load dynamic hero & about content (with fallbacks)
+$heroContent  = getSiteContent('hero');
+$aboutContent = getSiteContent('about');
+$_heroTitle   = $heroContent['title']       ?? SITE_NAME;
+$_heroSub     = $heroContent['subtitle']    ?? 'সব MFS একটি প্ল্যাটফর্মে';
+$_heroDesc    = $heroContent['description'] ?? '';
+$_heroImage   = $heroContent['image']       ?? '';
+$_aboutTitle  = $aboutContent['title']       ?? 'আমাদের সম্পর্কে';
+$_aboutDesc   = $aboutContent['description'] ?? '';
+
+// Dynamic subscription price & currency from settings
+$_subPrice  = getSetting('subscription_price', (string)SUB_AMOUNT);
+$_currency  = getSetting('currency_symbol', '৳');
 
 include __DIR__ . '/includes/header.php';
 ?>
@@ -21,26 +36,30 @@ include __DIR__ . '/includes/header.php';
 <div class="page-loader" id="pageLoader">
     <div class="text-center">
         <div class="loader-icon">💳</div>
-        <div class="loader-text"><?= SITE_NAME ?></div>
+        <div class="loader-text"><?= sanitize($_siteName ?? SITE_NAME) ?></div>
     </div>
 </div>
 
 <!-- ============================================================
      Hero Section
      ============================================================ -->
-<section class="hero-section">
+<section class="hero-section"<?php if ($_heroImage): ?> style="background-image:url('<?= sanitize($_heroImage) ?>');background-size:cover;background-position:center"<?php endif; ?>>
     <div class="container">
         <div class="row align-items-center g-5">
             <div class="col-lg-7">
                 <div class="hero-badge">
                     🇧🇩 বাংলাদেশের #১ MFS পোর্টাল
                 </div>
-                <h1 class="hero-title"><?= SITE_NAME ?></h1>
-                <p class="hero-subtitle-bn">সব MFS একটি প্ল্যাটফর্মে</p>
+                <h1 class="hero-title"><?= sanitize($_heroTitle) ?></h1>
+                <p class="hero-subtitle-bn"><?= sanitize($_heroSub) ?></p>
                 <p class="hero-desc">
-                    বাংলাদেশের সকল মোবাইল ফিনান্সিয়াল সার্ভিস — bKash, Nagad, Rocket এবং আরও ১০টি —
-                    একটি সুন্দর, নিরাপদ এবং সহজ প্ল্যাটফর্মে ব্যবহার করুন।
-                    মাত্র ৳<?= SUB_AMOUNT ?>/মাসে সম্পূর্ণ অ্যাক্সেস পান।
+                    <?php if ($_heroDesc): ?>
+                        <?= nl2br(sanitize($_heroDesc)) ?>
+                    <?php else: ?>
+                        বাংলাদেশের সকল মোবাইল ফিনান্সিয়াল সার্ভিস — bKash, Nagad, Rocket এবং আরও ১০টি —
+                        একটি সুন্দর, নিরাপদ এবং সহজ প্ল্যাটফর্মে ব্যবহার করুন।
+                        মাত্র <?= sanitize($_currency) ?><?= sanitize($_subPrice) ?>/মাসে সম্পূর্ণ অ্যাক্সেস পান।
+                    <?php endif; ?>
                 </p>
                 <div class="hero-stats">
                     <div class="hero-stat">
@@ -52,7 +71,7 @@ include __DIR__ . '/includes/header.php';
                         <div class="hero-stat-label">সেবার ধরন</div>
                     </div>
                     <div class="hero-stat">
-                        <div class="hero-stat-num">৳<?= SUB_AMOUNT ?></div>
+                        <div class="hero-stat-num"><?= sanitize($_currency) ?><?= sanitize($_subPrice) ?></div>
                         <div class="hero-stat-label">মাসিক সাবস্ক্রিপশন</div>
                     </div>
                 </div>
@@ -143,7 +162,7 @@ include __DIR__ . '/includes/header.php';
                 ['icon'=>'📱','title'=>'মোবাইল ফার্স্ট','desc'=>'সব ডিভাইসে সুন্দরভাবে কাজ করে — মোবাইল, ট্যাবলেট বা ডেস্কটপ।'],
                 ['icon'=>'🇧🇩','title'=>'বাংলাদেশ কেন্দ্রিক','desc'=>'বাংলা ভাষায় ইন্টারফেস, বাংলাদেশি নম্বর ফরম্যাট সমর্থন।'],
                 ['icon'=>'📊','title'=>'লেনদেন ইতিহাস','desc'=>'সকল MFS এর লেনদেন একটি জায়গায় দেখুন এবং ট্র্যাক করুন।'],
-                ['icon'=>'💎','title'=>'সাশ্রয়ী মূল্য','desc'=>'মাত্র ৳' . SUB_AMOUNT . '/মাসে ১৩টি MFS সার্ভিসের সম্পূর্ণ অ্যাক্সেস।'],
+                ['icon'=>'💎','title'=>'সাশ্রয়ী মূল্য','desc'=>'মাত্র ' . sanitize($_currency) . sanitize($_subPrice) . '/মাসে ১৩টি MFS সার্ভিসের সম্পূর্ণ অ্যাক্সেস।'],
             ];
             foreach ($features as $f): ?>
             <div class="col-sm-6 col-lg-4">
@@ -174,7 +193,7 @@ include __DIR__ . '/includes/header.php';
             $steps = [
                 ['num'=>'1','icon'=>'📝','title'=>'রেজিস্টার করুন','desc'=>'আপনার ফোন নম্বর ও PIN দিয়ে অ্যাকাউন্ট তৈরি করুন।'],
                 ['num'=>'2','icon'=>'📱','title'=>'OTP ভেরিফাই','desc'=>'SMS এ আসা ৬ সংখ্যার কোড দিয়ে নম্বর নিশ্চিত করুন।'],
-                ['num'=>'3','icon'=>'💳','title'=>'সাবস্ক্রাইব করুন','desc'=>'৳' . SUB_AMOUNT . ' বিকাশ/নগদে পাঠিয়ে সাবস্ক্রিপশন নিন।'],
+                ['num'=>'3','icon'=>'💳','title'=>'সাবস্ক্রাইব করুন','desc'=>sanitize($_currency) . sanitize($_subPrice) . ' বিকাশ/নগদে পাঠিয়ে সাবস্ক্রিপশন নিন।'],
                 ['num'=>'4','icon'=>'🚀','title'=>'ব্যবহার শুরু করুন','desc'=>'১৩টি MFS সার্ভিসের সব সুবিধা উপভোগ করুন!'],
             ];
             foreach ($steps as $s): ?>
@@ -208,7 +227,7 @@ include __DIR__ . '/includes/header.php';
         <div class="pricing-card">
             <div class="hero-badge mb-2" style="background:rgba(255,255,255,0.2)">⭐ সব ফিচার অন্তর্ভুক্ত</div>
             <h3 class="text-white">মাসিক প্ল্যান</h3>
-            <div class="pricing-price">৳<?= SUB_AMOUNT ?></div>
+            <div class="pricing-price"><?= sanitize($_currency) ?><?= sanitize($_subPrice) ?></div>
             <div class="pricing-price-sub">প্রতি মাস (<?= SUB_DAYS ?> দিন)</div>
             <ul class="pricing-features mt-4">
                 <?php
