@@ -112,6 +112,10 @@ function getSubscriptionDetails(int $userId): ?array {
 function expireSubscriptions(): int {
     $db  = getDB();
     $now = date('Y-m-d');
-    $res = $db->query("UPDATE subscriptions SET status = 'expired' WHERE status = 'active' AND end_date < '{$now}'");
-    return $db->affected_rows;
+    $stmt = $db->prepare("UPDATE subscriptions SET status = 'expired' WHERE status = 'active' AND end_date < ?");
+    $stmt->bind_param('s', $now);
+    $stmt->execute();
+    $affected = $stmt->affected_rows;
+    $stmt->close();
+    return $affected;
 }

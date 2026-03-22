@@ -34,6 +34,7 @@ define('PIN_MIN_LENGTH', 4);
 define('PIN_MAX_LENGTH', 6);
 
 // Payment Numbers (admin configurable)
+// IMPORTANT: Replace these with your actual bKash/Nagad merchant numbers before going live!
 define('BKASH_NUMBER', '01XXXXXXXXX');
 define('NAGAD_NUMBER', '01XXXXXXXXX');
 

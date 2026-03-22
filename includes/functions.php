@@ -243,9 +243,13 @@ function jsonResponse(bool $success, string $message, array $data = []): void {
 }
 
 /**
- * Redirect helper
+ * Redirect helper — only allows relative paths to prevent open redirect
  */
 function redirect(string $url): never {
+    // Only allow relative paths (starting with /) to prevent open redirects
+    if (!preg_match('/^\/[a-zA-Z0-9\/_\-\.?=&%]*$/', $url)) {
+        $url = '/';
+    }
     header('Location: ' . $url);
     exit;
 }

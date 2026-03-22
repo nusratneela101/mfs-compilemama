@@ -34,7 +34,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } elseif (!empty($email) && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
             $error = 'সঠিক ইমেইল ঠিকানা দিন।';
         } elseif (strlen($pin) < PIN_MIN_LENGTH || strlen($pin) > PIN_MAX_LENGTH || !ctype_digit($pin)) {
-            $error = PIN_MIN_LENGTH . '–' . PIN_MAX_LENGTH . ' সংখ্যার সংখ্যার PIN দিন।';
+            $error = PIN_MIN_LENGTH . '–' . PIN_MAX_LENGTH . ' সংখ্যার PIN দিন।';
         } elseif ($pin !== $pinConfirm) {
             $error = 'PIN এবং কনফার্ম PIN মিলছে না।';
         } elseif (!rateLimitCheck($_SERVER['REMOTE_ADDR'] ?? 'unknown', 'register', 5, 3600)) {
@@ -153,7 +153,7 @@ include __DIR__ . '/includes/header.php';
                                         onclick="togglePassword('pin',this)" tabindex="-1">
                                     <i class="fas fa-eye"></i>
                                 </button>
-                                <div class="invalid-feedback">সংখ্যায় <?= PIN_MIN_LENGTH ?>–<?= PIN_MAX_LENGTH ?> সংখ্যার PIN দিন।</div>
+                                <div class="invalid-feedback"><?= PIN_MIN_LENGTH ?>–<?= PIN_MAX_LENGTH ?> সংখ্যার PIN দিন।</div>
                             </div>
                         </div>
 

@@ -2,6 +2,11 @@
 /**
  * Database Configuration
  * MFS Compilemama
+ *
+ * PRODUCTION NOTE: Change DB_USER and DB_PASS to secure values.
+ * Never use root with empty password in production.
+ * Create a dedicated MySQL user with limited privileges:
+ *   GRANT SELECT, INSERT, UPDATE, DELETE ON mfs_compilemama.* TO 'mfsapp'@'localhost' IDENTIFIED BY 'strong_password';
  */
 
 define('DB_HOST', 'localhost');

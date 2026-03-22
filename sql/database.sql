@@ -147,8 +147,8 @@ INSERT INTO `admin_users` (`username`, `password_hash`, `email`) VALUES
 ('admin', '$2y$12$c2nYXXsX/pIqrCrArvDZ2.xSaCK76hnyMyVIShCpQG6ArmUvDxrW2', 'admin@mfscompilemama.com');
 
 -- ============================================================
--- NOTE: The admin password hash above is for 'password' (Laravel default).
--- Run the following PHP to regenerate for 'admin123':
--- echo password_hash('admin123', PASSWORD_BCRYPT, ['cost' => 12]);
--- The install script will update this automatically.
+-- NOTE: The admin password hash above is bcrypt (cost=12) for 'admin123'.
+-- To regenerate with a different password, run:
+-- echo password_hash('your_password', PASSWORD_BCRYPT, ['cost' => 12]);
+-- Change the admin password immediately after installation.
 -- ============================================================
