@@ -78,8 +78,9 @@ $db        = getDB();
 $reference = generateReference();
 $status    = 'success'; // Simulated
 
-// Simulate occasional failures (5% chance)
-if (random_int(1, 100) <= 5) {
+// Simulate occasional failures (configurable via TRANSACTION_FAILURE_RATE, default 0)
+$failureRate = defined('TRANSACTION_FAILURE_RATE') ? (int) TRANSACTION_FAILURE_RATE : 0;
+if ($failureRate > 0 && random_int(1, 100) <= $failureRate) {
     $status = 'failed';
 }
 

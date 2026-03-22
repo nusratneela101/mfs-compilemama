@@ -63,6 +63,10 @@ define('ADMIN_PREFIX', 'admin');
 // Debug mode
 define('DEBUG_MODE', false);
 
+// Transaction simulation: failure rate percentage (0 = always success, 5 = 5% failures)
+// Set to 0 for production
+define('TRANSACTION_FAILURE_RATE', 0);
+
 // Timezone
 define('TIMEZONE', 'Asia/Dhaka');
 date_default_timezone_set(TIMEZONE);

@@ -243,11 +243,14 @@ function jsonResponse(bool $success, string $message, array $data = []): void {
 }
 
 /**
- * Redirect helper — only allows relative paths to prevent open redirect
+ * Redirect helper — only allows relative paths to prevent open redirect.
+ * Strips any protocol/host prefix and allows only safe path characters.
  */
 function redirect(string $url): never {
-    // Only allow relative paths (starting with /) to prevent open redirects
-    if (!preg_match('/^\/[a-zA-Z0-9\/_\-\.?=&%]*$/', $url)) {
+    // Remove any scheme/host prefix (e.g. "http://evil.com/path" → "/path")
+    $url = preg_replace('#^[a-zA-Z][a-zA-Z0-9+\-.]*://[^/]*#', '', $url);
+    // Only allow safe characters in relative paths
+    if (!preg_match('#^/[a-zA-Z0-9/_\-\.?=&]*$#', $url)) {
         $url = '/';
     }
     header('Location: ' . $url);

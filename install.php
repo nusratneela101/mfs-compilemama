@@ -2,15 +2,15 @@
 /**
  * Database Install Script
  * Run this once to set up the database
- * Access: http://yoursite.com/install.php
+ * Access: http://yoursite.com/install.php?key=YOUR_SECRET_KEY
  * DELETE THIS FILE AFTER INSTALLATION!
  */
 
-// Basic security: require a secret key
+// Basic security: require a secret key (change this before deploying!)
 define('INSTALL_SECRET', 'mfs-install-2024');
 if (($_GET['key'] ?? '') !== INSTALL_SECRET) {
     http_response_code(403);
-    die('<h1>403 Forbidden</h1><p>Provide ?key=' . INSTALL_SECRET . ' to proceed.</p>');
+    die('<h1>403 Forbidden</h1><p>Invalid or missing installation key.</p>');
 }
 
 $dbHost = 'localhost';
