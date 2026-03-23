@@ -77,11 +77,11 @@ include __DIR__ . '/includes/header.php';
                 </div>
                 <div class="hero-cta-group">
                     <?php if ($isLogged): ?>
-                        <a href="/dashboard.php" class="btn-hero-primary">
-                            <i class="fas fa-th-large me-2"></i>ড্যাশবোর্ডে যান
+                        <a href="/wallet.php" class="btn-hero-primary">
+                            <i class="fas fa-wallet me-2"></i>আমার ওয়ালেট
                         </a>
-                        <a href="/mfs-portal.php" class="btn-hero-outline">
-                            <i class="fas fa-mobile-alt me-2"></i>MFS পোর্টাল
+                        <a href="/dashboard.php" class="btn-hero-outline">
+                            <i class="fas fa-th-large me-2"></i>ড্যাশবোর্ড
                         </a>
                     <?php else: ?>
                         <a href="/register.php" class="btn-hero-primary">
@@ -157,12 +157,12 @@ include __DIR__ . '/includes/header.php';
         <div class="row g-4">
             <?php
             $features = [
-                ['icon'=>'🔒','title'=>'সম্পূর্ণ নিরাপদ','desc'=>'bcrypt এনক্রিপশন, CSRF সুরক্ষা এবং OTP ভেরিফিকেশন সহ আপনার তথ্য সম্পূর্ণ সুরক্ষিত।'],
-                ['icon'=>'⚡','title'=>'দ্রুত লেনদেন','desc'=>'মাত্র কয়েক সেকেন্ডে সেন্ড মানি, ক্যাশ আউট, রিচার্জ এবং পেমেন্ট সম্পন্ন করুন।'],
+                ['icon'=>'💰','title'=>'ডিজিটাল ওয়ালেট','desc'=>'Alipay এর মতো নিজের ওয়ালেটে টাকা রাখুন। bKash/Nagad থেকে Add Money করুন, যেকোনো MFS এ Withdraw করুন।'],
+                ['icon'=>'🔒','title'=>'সম্পূর্ণ নিরাপদ','desc'=>'bcrypt এনক্রিপশন, CSRF সুরক্ষা, ওয়ালেট PIN এবং OTP ভেরিফিকেশন সহ আপনার তথ্য সম্পূর্ণ সুরক্ষিত।'],
+                ['icon'=>'⚡','title'=>'দ্রুত লেনদেন','desc'=>'মাত্র কয়েক সেকেন্ডে সেন্ড মানি, ক্যাশ আউট, রিচার্জ এবং ওয়ালেট ট্রান্সফার সম্পন্ন করুন।'],
+                ['icon'=>'🆓','title'=>'৳১০,০০০ পর্যন্ত ফ্রি','desc'=>'প্রথম ৳১০,০০০ লেনদেন সম্পূর্ণ বিনামূল্যে। এরপর মাত্র ৳৩/লেনদেন — সর্বনিম্ন চার্জ।'],
                 ['icon'=>'📱','title'=>'মোবাইল ফার্স্ট','desc'=>'সব ডিভাইসে সুন্দরভাবে কাজ করে — মোবাইল, ট্যাবলেট বা ডেস্কটপ।'],
-                ['icon'=>'🇧🇩','title'=>'বাংলাদেশ কেন্দ্রিক','desc'=>'বাংলা ভাষায় ইন্টারফেস, বাংলাদেশি নম্বর ফরম্যাট সমর্থন।'],
-                ['icon'=>'📊','title'=>'লেনদেন ইতিহাস','desc'=>'সকল MFS এর লেনদেন একটি জায়গায় দেখুন এবং ট্র্যাক করুন।'],
-                ['icon'=>'💎','title'=>'সাশ্রয়ী মূল্য','desc'=>'মাত্র ' . sanitize($_currency) . sanitize($_subPrice) . '/মাসে ১৩টি MFS সার্ভিসের সম্পূর্ণ অ্যাক্সেস।'],
+                ['icon'=>'📊','title'=>'লেনদেন ইতিহাস','desc'=>'সকল MFS এবং ওয়ালেট লেনদেন একটি জায়গায় দেখুন, ফিল্টার করুন এবং CSV এক্সপোর্ট করুন।'],
             ];
             foreach ($features as $f): ?>
             <div class="col-sm-6 col-lg-4">

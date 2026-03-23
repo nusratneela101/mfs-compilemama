@@ -8,14 +8,16 @@ require_once __DIR__ . '/config/location.php';
 require_once __DIR__ . '/includes/functions.php';
 require_once __DIR__ . '/includes/auth.php';
 require_once __DIR__ . '/includes/subscription.php';
+require_once __DIR__ . '/includes/wallet.php';
 
 startSecureSession();
 requireSubscription();
 
-$user     = getCurrentUser();
-$userId   = (int)$_SESSION['user_id'];
-$daysLeft = getSubscriptionDaysLeft($userId);
+$user      = getCurrentUser();
+$userId    = (int)$_SESSION['user_id'];
+$daysLeft  = getSubscriptionDaysLeft($userId);
 $providers = getMFSProviders();
+$wallet    = getOrCreateWallet($userId);
 
 // Recent transactions
 $db    = getDB();
@@ -68,12 +70,19 @@ $statusCls  = ['success'=>'badge-success','pending'=>'badge-pending','failed'=>'
 
     <!-- Stat Cards -->
     <div class="row g-3 mb-4">
-        <div class="col-6 col-md-3">
-            <div class="stat-card">
-                <div class="stat-icon bg-primary bg-opacity-10">💰</div>
-                <div class="stat-value"><?= $daysLeft ?></div>
-                <div class="stat-label">সাব. দিন বাকি</div>
-            </div>
+        <!-- Wallet Balance Card -->
+        <div class="col-12 col-md-6">
+            <a href="/wallet.php" class="text-decoration-none">
+                <div class="stat-card d-flex align-items-center gap-3"
+                     style="background:linear-gradient(135deg,#E2136E 0%,#8B1A7C 100%);color:#fff">
+                    <div class="stat-icon" style="background:rgba(255,255,255,.2);font-size:1.8rem">💰</div>
+                    <div>
+                        <div class="stat-label" style="color:rgba(255,255,255,.8)">ওয়ালেট ব্যালেন্স</div>
+                        <div class="stat-value" style="color:#fff">৳<?= number_format((float)$wallet['balance'], 2) ?></div>
+                    </div>
+                    <div class="ms-auto opacity-75" style="font-size:.85rem">→ ওয়ালেট</div>
+                </div>
+            </a>
         </div>
         <div class="col-6 col-md-3">
             <div class="stat-card">
@@ -87,13 +96,6 @@ $statusCls  = ['success'=>'badge-success','pending'=>'badge-pending','failed'=>'
                 <div class="stat-icon" style="background:#e3f2fd">💸</div>
                 <div class="stat-value">৳<?= number_format((float)($txStats['sum'] ?? 0)) ?></div>
                 <div class="stat-label">মোট পরিমাণ</div>
-            </div>
-        </div>
-        <div class="col-6 col-md-3">
-            <div class="stat-card">
-                <div class="stat-icon" style="background:#fce4ef">🏦</div>
-                <div class="stat-value"><?= count($providers) ?></div>
-                <div class="stat-label">MFS সার্ভিস</div>
             </div>
         </div>
     </div>
@@ -125,6 +127,12 @@ $statusCls  = ['success'=>'badge-success','pending'=>'badge-pending','failed'=>'
             <div class="stat-card mb-3">
                 <h5 class="fw-bold mb-3">⚡ দ্রুত কার্যক্রম</h5>
                 <div class="d-grid gap-2">
+                    <a href="/wallet.php" class="btn btn-primary rounded-3 text-start">
+                        💰 আমার ওয়ালেট
+                    </a>
+                    <a href="/wallet-add.php" class="btn btn-outline-primary rounded-3 text-start">
+                        📥 ওয়ালেটে অ্যাড মানি
+                    </a>
                     <a href="/mfs-portal.php?action=send" class="btn btn-outline-primary rounded-3 text-start">
                         📤 সেন্ড মানি
                     </a>
@@ -133,9 +141,6 @@ $statusCls  = ['success'=>'badge-success','pending'=>'badge-pending','failed'=>'
                     </a>
                     <a href="/mfs-portal.php?action=recharge" class="btn btn-outline-primary rounded-3 text-start">
                         📱 মোবাইল রিচার্জ
-                    </a>
-                    <a href="/mfs-portal.php?action=payment" class="btn btn-outline-primary rounded-3 text-start">
-                        🏪 পেমেন্ট
                     </a>
                     <a href="/transaction.php" class="btn btn-outline-secondary rounded-3 text-start">
                         📋 সব লেনদেন দেখুন
