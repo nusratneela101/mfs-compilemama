@@ -22,6 +22,7 @@ $_favicon     = getSetting('site_favicon', '');
 $navItems = [
     ['href'=>'/admin/index.php',         'icon'=>'fas fa-tachometer-alt', 'label'=>'Dashboard'],
     ['href'=>'/admin/users.php',         'icon'=>'fas fa-users',           'label'=>'Users'],
+    ['href'=>'/admin/wallets.php',       'icon'=>'fas fa-wallet',          'label'=>'Wallets'],
     ['href'=>'/admin/subscriptions.php', 'icon'=>'fas fa-crown',           'label'=>'Subscriptions'],
     ['href'=>'/admin/payments.php',      'icon'=>'fas fa-money-bill-wave', 'label'=>'Payments'],
     ['href'=>'/admin/manage-admins.php', 'icon'=>'fas fa-user-shield',     'label'=>'Manage Admins'],

@@ -81,6 +81,7 @@ if (!isset($bodyClass)) $bodyClass = '';
                 <?php if ($isLogged): ?>
                     <li class="nav-item"><a class="nav-link" href="/dashboard.php"><i class="fas fa-th-large me-1"></i>ড্যাশবোর্ড</a></li>
                     <li class="nav-item"><a class="nav-link" href="/mfs-portal.php"><i class="fas fa-mobile-alt me-1"></i>MFS পোর্টাল</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/wallet.php"><i class="fas fa-wallet me-1"></i>💰 ওয়ালেট</a></li>
                     <li class="nav-item"><a class="nav-link" href="/transaction.php"><i class="fas fa-history me-1"></i>লেনদেন</a></li>
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
